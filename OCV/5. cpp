@@ -1,0 +1,98 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <algorithm>
+
+using namespace std;
+
+// Structs
+struct Edge {
+    int u;
+    int v;
+    int w;
+};
+
+struct MstResult {
+    long long total_weight;
+};
+
+struct DisjointSet {
+    vector<int> parent;
+    vector<int> rank;
+
+    DisjointSet(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        for (int i = 0; i < n; ++i) parent[i] = i;
+    }
+
+    int find_set(int v) {
+        if (v == parent[v]) return v;
+        return parent[v] = find_set(parent[v]);
+    }
+
+    bool union_sets(int a, int b) {
+        a = find_set(a);
+        b = find_set(b);
+        if (a != b) {
+            if (rank[a] < rank[b]) swap(a, b);
+            parent[b] = a;
+            if (rank[a] == rank[b]) rank[a]++;
+            return true;
+        }
+        return false;
+    }
+};
+
+// Helper functions
+bool CompareEdges(const Edge& a, const Edge& b) {
+    return a.w < b.w;
+}
+
+// Problem
+MstResult calculate_mst_weight(int V, vector<Edge>& edges) {
+    sort(edges.begin(), edges.end(), CompareEdges);
+
+    DisjointSet dsu(V);
+    long long mst_weight = 0;
+    int edges_count = 0;
+
+    for (const auto& edge : edges) {
+        if (dsu.union_sets(edge.u, edge.v)) {
+            mst_weight += edge.w;
+            edges_count++;
+            if (edges_count == V - 1) break;
+        }
+    }
+    return {mst_weight};
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    string raw_input;
+    if (!getline(cin, raw_input)) return 0;
+
+    stringstream ss(raw_input);
+    int V, E;
+    if (!(ss >> V >> E)) return 0;
+
+    vector<Edge> edges;
+    edges.reserve(E);
+
+    while (edges.size() < E && getline(cin, raw_input)) {
+        if (raw_input.empty()) continue;
+        stringstream edge_ss(raw_input);
+        int u, v, w;
+        if (edge_ss >> u >> v >> w) {
+            edges.push_back({u, v, w});
+        }
+    }
+
+    MstResult output = calculate_mst_weight(V, edges);
+    cout << output.total_weight << "\n";
+
+    return 0;
+}
