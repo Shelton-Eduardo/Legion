@@ -1,0 +1,83 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <algorithm>
+
+using namespace std;
+
+// Structs
+struct CoinDenomination {
+    int nominal;
+    int count;
+};
+
+struct CoinAllocation {
+    int nominal;
+    int amount_used;
+};
+
+struct CoinResult {
+    bool possible;
+    vector<CoinAllocation> allocation;
+};
+
+// Problem
+CoinResult minimize_coins_dispensed(int S, const vector<CoinDenomination>& coins) {
+    vector<CoinAllocation> allocation;
+    long long remaining_amount = S;
+
+    for (const auto& coin : coins) {
+        if (remaining_amount <= 0) {
+            allocation.push_back({coin.nominal, 0});
+            continue;
+        }
+
+        long long max_can_take = remaining_amount / coin.nominal;
+        long long actual_take = min(max_can_take, (long long)coin.count);
+
+        remaining_amount -= actual_take * coin.nominal;
+        allocation.push_back({coin.nominal, (int)actual_take});
+    }
+
+    if (remaining_amount == 0) {
+        return {true, allocation};
+    }
+    return {false, {}};
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    string raw_input;
+    if (!getline(cin, raw_input)) return 0;
+
+    stringstream ss(raw_input);
+    int K, S;
+    if (!(ss >> K >> S)) return 0;
+
+    vector<CoinDenomination> coins;
+    coins.reserve(K);
+
+    while (coins.size() < K && getline(cin, raw_input)) {
+        if (raw_input.empty()) continue;
+        stringstream coin_ss(raw_input);
+        int nominal, count;
+        if (coin_ss >> nominal >> count) {
+            coins.push_back({nominal, count});
+        }
+    }
+
+    CoinResult output = minimize_coins_dispensed(S, coins);
+
+    if (output.possible) {
+        for (const auto& item : output.allocation) {
+            cout << item.nominal << ": " << item.amount_used << "\n";
+        }
+    } else {
+        cout << "Impossible\n";
+    }
+
+    return 0;
+}
