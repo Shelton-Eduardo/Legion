@@ -1,0 +1,13 @@
+# Simple Bubble Sort Example
+
+numbers = [5, 2, 9, 1, 7]
+
+# Bubble Sort Algorithm
+for i in range(len(numbers) - 1):
+    for j in range(len(numbers) - 1 - i):
+        if numbers[j] > numbers[j + 1]:
+            # Swap the elements
+            numbers[j], numbers[j + 1] = numbers[j + 1], numbers[j]
+
+# Display the sorted list
+print("Sorted list:", numbers)
